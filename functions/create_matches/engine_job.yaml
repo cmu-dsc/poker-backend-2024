@@ -1,0 +1,70 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: engine-{{MATCH_ID}}
+spec:
+  ttlSecondsAfterFinished: 15
+  activeDeadlineSeconds: 1000
+  template:
+    spec:
+      initContainers:
+      - name: wait-for-bot1
+        image: busybox
+        command: ['sh', '-c', 'until nc -z {{TEAM1}}-bot-service-{{BOT1_UUID}} 50051; do echo waiting for bot1; sleep 2; done;']
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+      - name: wait-for-bot2
+        image: busybox
+        command: ['sh', '-c', 'until nc -z {{TEAM2}}-bot-service-{{BOT2_UUID}} 50051; do echo waiting for bot2; sleep 2; done;']
+        resources:
+          requests:
+            cpu: "50m"
+            memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
+      containers:
+      - name: engine
+        image: us-east4-docker.pkg.dev/pokerai-417521/cmu-dsc/engine:latest
+        env:
+        - name: PLAYER_1_NAME
+          value: {{TEAM1}}
+        - name: PLAYER_2_NAME
+          value: {{TEAM2}}
+        - name: PLAYER_1_DNS
+          value: {{TEAM1}}-bot-service-{{BOT1_UUID}}:50051
+        - name: PLAYER_2_DNS
+          value: {{TEAM2}}-bot-service-{{BOT2_UUID}}:50051
+        - name: MATCH_ID
+          value: "{{MATCH_ID}}"
+        - name: BUCKET_NAME
+          value: {{BUCKET_NAME}}
+        - name: INSTANCE_CONNECTION_NAME
+          value: {{INSTANCE_CONNECTION_NAME}}
+        - name: DB_USER
+          value: {{DB_USER}}
+        - name: DB_PASS
+          value: {{DB_PASS}}
+        - name: DB_NAME
+          value: {{DB_NAME}}
+        - name: PYTHONUNBUFFERED
+          value: "1"
+        volumeMounts:
+        - name: logs
+          mountPath: /usr/src/app/logs
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "100Mi"
+          limits:
+            cpu: "250m"
+            memory: "200Mi"
+      restartPolicy: OnFailure
+      volumes:
+      - name: logs
+        emptyDir: {}

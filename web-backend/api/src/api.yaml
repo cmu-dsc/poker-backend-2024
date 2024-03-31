@@ -1,0 +1,387 @@
+openapi: 3.0.1
+info:
+  version: 1.0.0
+  title: PokerAI Web Server
+  description: API for PokerAI Web Server.
+servers:
+  - url: "{baseURL}" # for local testing
+    variables:
+      baseURL:
+        default: "http://localhost:8080"
+        description: Base URL of the server
+    description: Local server
+tags:
+  - name: default
+    description: some testing stuff
+  - name: user
+    description: all user related operations
+  - name: team
+    description: all team related operations
+  - name: match
+    description: all match related operations
+paths:
+  /:
+    get:
+      tags:
+        - default
+      summary: Get Hello World!
+      description: Get Hello World!
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HelloWorldResponseDto"
+  
+  /user/me:
+    get:
+      tags:
+        - user
+      summary: Get the current user
+      description: Get the current user
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserDto"
+        "401":
+          description: Unauthorized
+        "404":
+          description: Not Found
+
+  /user/team/leave:
+    post:
+      tags:
+        - user
+      summary: Leave the current team
+      description: Leave the current team
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "422":
+          description: Not in a team
+
+  /team:
+    post:
+      tags:
+        - team
+      summary: Create a new team
+      description: Create a new team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamDto"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDto"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "422":
+          description: User already in a team, github username already taken, or team already exists
+    get:
+      tags:
+        - team
+      summary: Get all teams
+      description: Get all teams
+      operationId: getAllTeams
+      parameters:
+        - in: query
+          name: lastGames
+          required: false
+          schema:
+            type: number
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TeamDto"
+  
+  /team/{githubUsername}:
+    get:
+      tags:
+        - team
+      summary: Get a team by github username
+      description: Get a team by github username
+      parameters:
+        - in: path
+          name: githubUsername
+          required: true
+          schema:
+            type: string
+          description: The github username of the team
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDto"
+        "404":
+          description: Not Found
+    put:
+      tags:
+        - team
+      summary: Update a team by github username
+      description: Update a team by github username
+      parameters:
+        - in: path
+          name: githubUsername
+          required: true
+          schema:
+            type: string
+          description: The github username of the team
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TeamDto"
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TeamDto"
+        "400":
+          description: Bad Request
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+        "422":
+          description: User already in a team, github username already taken, or team already exists
+    delete:
+      tags:
+        - team
+      summary: Delete a team by github username
+      description: Delete a team by github username
+      parameters:
+        - in: path
+          name: githubUsername
+          required: true
+          schema:
+            type: string
+          description: The github username of the team
+      responses:
+        "204":
+          description: No Content
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+
+  /match/team/{githubUsername}:
+    get:
+      tags:
+        - match
+      summary: Get all matches
+      description: Get all matches of my team
+      parameters:
+        - in: path
+          name: githubUsername
+          required: true
+          schema:
+            type: string
+          description: The github username of the team
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MatchDto"
+  /match/{matchId}/logs/engine/csv:
+    get:
+      tags:
+        - match
+      summary: Get the engine logs of a match by match id
+      description: Get the engine logs of a match by match id
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema:
+            type: string
+          description: The match id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadLinkDto"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /match/{matchId}/logs/engine/txt:
+    get:
+      tags:
+        - match
+      summary: Get the engine logs of a match by match id
+      description: Get the engine logs of a match by match id
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema:
+            type: string
+          description: The match id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadLinkDto"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  /match/{matchId}/logs/bot:
+    get:
+      tags:
+        - match
+      summary: Get the bot logs of a match by match id
+      description: Get the bot logs of a match by match id
+      parameters:
+        - in: path
+          name: matchId
+          required: true
+          schema:
+            type: string
+          description: The match id
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DownloadLinkDto"
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+        "404":
+          description: Not Found
+  
+components:
+  schemas:
+    HelloWorldResponseDto:
+      type: object
+      properties:
+        msg:
+          type: string
+          example: Hello World!
+      required:
+        - msg
+    UserDto:
+      type: object
+      properties:
+        andrewId:
+          type: string
+          example: "acarnegie"
+        teamId:
+          type: string
+          example: "andrewc"
+      required:
+        - userId
+    TeamDto:
+      type: object
+      properties:
+        githubUsername:
+          type: string
+          example: "andrewc"
+        members:
+          type: array
+          items:
+            type: string
+            example: "acarnegie"
+        wins:
+          type: number
+          example: 10
+        losses:
+          type: number
+          example: 2
+      required:
+        - githubUsername
+        - members
+    MatchDto:
+      type: object
+      properties:
+        matchId:
+          type: string
+          example: "6ba7b810-9dad-11d1-80b4-00c04fd430c8"
+        team1Id:
+          type: string
+          example: "andrewc"
+        team2Id:
+          type: string
+          example: "andrewm"
+        timestamp:
+          type: string
+          format: date-time
+          example: "2021-04-01T12:00:00Z"
+        team1Score:
+          type: number
+          example: 1000
+        team2Score:
+          type: number
+          example: 0
+      required:
+        - matchId
+        - team1Id
+        - team2Id
+        - timestamp
+        - team1Score
+        - team2Score
+    DownloadLinkDto:
+      type: object
+      properties:
+        downloadUrl:
+          type: string
+          example: "http://localhost:8080/match/6ba7b810-9dad-11d1-80b4-00c04fd430c8/logs/engine"
+        filetype:
+          type: string
+          enum: ["csv", "txt"]
+      required:
+        - downloadLink
+        - filetype
+
+  securitySchemes:
+    bearerAuth:            # arbitrary name for the security scheme
+      type: http
+      scheme: bearer
+      bearerFormat: JWT    # optional, arbitrary value for documentation purposes
+
+security:
+  - bearerAuth: []
+

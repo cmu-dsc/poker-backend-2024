@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{TEAM_NAME}}-bot-{{BOT_UUID}}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{TEAM_NAME}}-bot-{{BOT_UUID}}
+  template:
+    metadata:
+      labels:
+        app: {{TEAM_NAME}}-bot-{{BOT_UUID}}
+    spec:
+      backoffLimit: 3
+      containers:
+      - name: {{TEAM_NAME}}-bot
+        image: us-east4-docker.pkg.dev/pokerai-417521/{{IMAGE_NAME}}/pokerbot:latest
+        ports:
+        - containerPort: 50051
+        resources:
+          limits:
+            cpu: "500m"
+            memory: "1500Mi"
+          requests:
+            cpu: "250m"
+            memory: "500Mi"
+        env:
+        - name: PYTHONUNBUFFERED
+          value: "1"

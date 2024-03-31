@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{TEAM_NAME}}-bot-service-{{BOT_UUID}}
+spec:
+  selector:
+    app: {{TEAM_NAME}}-bot-{{BOT_UUID}}
+  ports:
+  - port: 50051

@@ -1,0 +1,41 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model UserDao {
+  andrewId              String   @id @unique
+  TeamDao               TeamDao? @relation(fields: [teamDaoGithubUsername], references: [githubUsername])
+  teamDaoGithubUsername String?
+}
+
+model TeamDao {
+  githubUsername String         @id @unique
+  members        UserDao[]
+  TeamMatchDao   TeamMatchDao[]
+}
+
+model TeamMatchDao {
+  id       Int      @id @default(autoincrement()) @unique
+  match    MatchDao @relation(fields: [matchId], references: [matchId])
+  matchId  String
+  team     TeamDao  @relation(fields: [teamId], references: [githubUsername])
+  teamId   String
+  bankroll Int
+}
+
+model MatchDao {
+  matchId       String         @id @unique
+  timestamp     DateTime       @default(now())
+  teamMatchDaos TeamMatchDao[]
+}
